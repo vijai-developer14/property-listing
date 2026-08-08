@@ -1,36 +1,38 @@
 "use client";
 
-import { useState }from 'react'
+import { useState } from 'react'
 
 function LoginForm() {
-const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
+    phone: '',
+    whatsapp: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.SubmitEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSignUp) {
       console.log('Signing up with:', formData);
-  
+
     } else {
       console.log('Logging in with:', { email: formData.email, password: formData.password });
-   
+
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        
-     
+
+
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-800">
             {isSignUp ? 'Create an Account' : 'Welcome Back'}
@@ -39,8 +41,8 @@ const [isSignUp, setIsSignUp] = useState(false);
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          
-      
+
+
           {isSignUp && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -53,12 +55,12 @@ const [isSignUp, setIsSignUp] = useState(false);
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter Name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2  focus:outline-none transition"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none transition"
               />
             </div>
           )}
 
-     
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email Address
@@ -74,7 +76,40 @@ const [isSignUp, setIsSignUp] = useState(false);
             />
           </div>
 
-   
+          {isSignUp && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                required
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter Phone Number"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none transition"
+              />
+            </div>
+          )}
+
+          {isSignUp && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                WhatsApp Number <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="tel"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                placeholder="Enter WhatsApp Number"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none transition"
+              />
+            </div>
+          )}
+
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -90,7 +125,7 @@ const [isSignUp, setIsSignUp] = useState(false);
             />
           </div>
 
-   
+
           {isSignUp && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -108,7 +143,7 @@ const [isSignUp, setIsSignUp] = useState(false);
             </div>
           )}
 
-      
+
           <button
             type="submit"
             className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition duration-200 mt-2"
