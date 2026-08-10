@@ -128,3 +128,42 @@ export const getPropertyById = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
+export const getSimilarProperties = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+
+    const current = await pool.query(
+      `SELECT city, property_type_id, property_price FROM property WHERE id = $1`,
+      [id]
+    );
+
+    if (current.rows.length === 0) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    const { city, property_type_id, property_price } = current.rows[0];
+
+  
+    const minPrice = property_price * 0.8;
+    const maxPrice = property_price * 1.2;
+
+    const result = await pool.query(
+      `SELECT id, property_name, city, property_price, property_bhk, property_type_id
+       FROM property
+       WHERE city = $1
+         AND property_type_id = $2
+         AND property_price BETWEEN $3 AND $4
+         AND id != $5
+       ORDER BY created_at DESC
+       LIMIT 4`,
+      [city, property_type_id, minPrice, maxPrice, id]
+    );
+
+    return res.status(200).json({ properties: result.rows });
+  } catch (error) {
+    console.error("Get similar properties error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import PropertyGallery from "@/components/PropertyGallery";
 import ContactOwnerButton from "@/components/ContactOwnerButton";
+import SimilarProperties from "@/components/SimilarProperties";
 
 type Property = {
   id: number;
@@ -96,6 +97,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           <ContactOwnerButton propertyId={property.id} />
         </div>
       </div>
+      <SimilarProperties propertyId={property.id} />
     </div>
   );
 }
