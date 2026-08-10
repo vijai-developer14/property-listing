@@ -5,8 +5,12 @@ type Property = {
   id: number;
   property_name: string;
   city: string;
+  location: string;
+  property_size: number;
   property_price: number;
   property_bhk: number;
+  property_type_id: number;
+  created_at: string;
 };
 type PropertyImage = {
   id: number;

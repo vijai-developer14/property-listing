@@ -1,12 +1,16 @@
 "use client";
-
+import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import PropertyThumbnail from "./PropertyThumbnail";
+import ContactOwnerButton from "./ContactOwnerButton";
+
 
 type Property = {
   id: number;
   property_name: string;
   city: string;
+  location: string;
+  property_size: number;
   property_price: number;
   property_bhk: number;
   property_type_id: number;
@@ -51,7 +55,7 @@ export default function PropertySearch() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/properties/search?${query}`);
       const data = await res.json();
 
-      setProperties((prev) => (reset ? data.properties : [...prev, ...data.properties]));
+      setProperties((prev) => (reset ? (data.properties || []) : [...prev, ...(data.properties || [])]));
       setNextCursor(data.nextCursor);
       setHasMore(data.hasMore);
     } catch (err) {
@@ -82,6 +86,24 @@ export default function PropertySearch() {
   return (
 <div className="max-w-6xl mx-auto p-6">
   <h1 className="text-3xl font-bold mb-6 text-gray-900">Find a Property</h1>
+
+  <div className="flex justify-between items-center mb-4">
+  <span className="text-sm text-gray-500">Property Listing</span>
+    <div className="flex gap-4">
+      <Link
+        href="/dashboard"
+        className="text-sm font-medium text-green-600 hover:underline"
+      >
+        + Add Property
+      </Link>
+      <Link
+        href="/login"
+        className="text-sm font-medium text-gray-600 hover:underline"
+      >
+        Login / Sign Up
+      </Link>
+    </div>
+  </div>
 
   {/* Filters */}
   <div className="bg-white border border-gray-200 shadow-sm rounded-xl p-4 mb-6 grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -173,22 +195,25 @@ export default function PropertySearch() {
   ) : (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {properties.map((p) => (
-        <div
+        <Link
           key={p.id}
-          className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-green-500 transition-all cursor-pointer"
+          href={`/properties/${p.id}`}
+          className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:border-green-500 transition-all block"
         >
           <PropertyThumbnail propertyId={p.id} alt={p.property_name} />
           <div className="p-4">
             <h3 className="font-semibold text-gray-900 truncate">{p.property_name}</h3>
             <p className="text-sm text-gray-500 mt-1">
-              {p.city} · {p.property_bhk} BHK
+              {p.location ? `${p.location}, ` : ""}{p.city}
             </p>
-
+            <p className="text-sm text-gray-500">
+              {p.property_bhk} BHK · {p.property_size ? `${p.property_size} sq ft` : "—"}
+            </p>
             <p className="text-lg font-bold text-green-600 mt-2">
-              Rs. {p.property_price}
+              {p.property_price}
             </p>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   )}

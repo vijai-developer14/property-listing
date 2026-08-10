@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import  pool  from "../config/db.js";
+import type { AuthRequest } from "../middleware/authMiddleware.js";
 
 import type { Request, Response } from "express";
 
@@ -24,7 +25,7 @@ export const register = async (req: Request, res: Response) => {
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(password, saltRounds);
 
-    // 4. Insert the new user
+  
     const result = await pool.query(
       `INSERT INTO users (user_name, user_mail, password_hash, user_number, user_whatsapp_number, created_at)
        VALUES ($1, $2, $3, $4, $5, NOW())
@@ -109,7 +110,7 @@ export const login = async (req: Request, res: Response) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 30 * 60 * 1000, // 30 min, matches your JWT expiry
+    maxAge: 30 * 60 * 1000, 
   });
 
   res.cookie("refreshToken", refreshToken, {
@@ -158,7 +159,7 @@ export const refreshAccessToken = (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 30 * 60 * 1000, // 30 min, matches your JWT expiry
+      maxAge: 30 * 60 * 1000, 
     });
 
     return res.status(200).json({ message: "Token refreshed" });
@@ -166,5 +167,21 @@ export const refreshAccessToken = (req: Request, res: Response) => {
     return res.status(403).json({
       message: "Invalid or expired refresh token",
     });
+  }
+};
+
+export const getCurrentUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await pool.query(
+      `SELECT user_id, user_name, user_mail FROM users WHERE user_id = $1`,
+      [req.user?.user_id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ user: result.rows[0] });
+  } catch (error) {
+    console.error("Get current user error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
   }
 };

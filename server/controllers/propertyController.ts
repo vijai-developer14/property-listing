@@ -1,5 +1,5 @@
 import pool from "../config/db.js";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import type { AuthRequest } from "../middleware/authMiddleware.js";
 
 export const createProperty = async (req: AuthRequest, res: Response) => {
@@ -102,6 +102,29 @@ export const deleteProperty = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({ message: "Property deleted" });
   } catch (error) {
     console.error("Delete property error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const getPropertyById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `SELECT p.*, pt.property_type
+       FROM property p
+       JOIN property_type pt ON p.property_type_id = pt.id
+       WHERE p.id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    return res.status(200).json({ property: result.rows[0] });
+  } catch (error) {
+    console.error("Get property error:", error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };

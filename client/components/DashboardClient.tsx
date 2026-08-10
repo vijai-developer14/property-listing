@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import PropertyForm from "./PropertyForm";
 import PropertyCard from "./PropertyCard";
+import Link from "next/link";
 
 type Property = {
   id: number;
@@ -15,6 +16,8 @@ type Property = {
   description: string;
   property_bhk: number;
   property_type_id: number;
+  created_at: string;
+  updated_at?: string;
 };
 
 export default function DashboardClient() {
@@ -51,6 +54,12 @@ export default function DashboardClient() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
+      <Link
+      href="/properties"
+      className="text-sm text-green-600 hover:underline mb-4 inline-block"
+    >
+      ← Back to Listings
+    </Link>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Properties</h1>
         <button

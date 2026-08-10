@@ -57,16 +57,16 @@ export const searchProperties = async (req: Request, res: Response) => {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    values.push(pageSize + 1); // fetch one extra to know if there's a next page
+    values.push(pageSize + 1); 
 
-    const result = await pool.query(
-      `SELECT id, property_name, city, property_price, property_bhk, property_type_id, created_at
-       FROM property
-       ${whereClause}
-       ORDER BY ${sortColumn} ${sortDirection}
-       LIMIT $${paramIndex}`,
-      values
-    );
+  const result = await pool.query(
+    `SELECT id, property_name, city, location, property_size, property_price, property_bhk, property_type_id, created_at
+    FROM property
+    ${whereClause}
+    ORDER BY ${sortColumn} ${sortDirection}
+    LIMIT $${paramIndex}`,
+    values
+  );
 
     const hasMore = result.rows.length > pageSize;
     const properties = hasMore ? result.rows.slice(0, pageSize) : result.rows;

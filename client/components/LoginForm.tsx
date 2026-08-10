@@ -74,7 +74,7 @@ function LoginForm() {
           setError(data.message || 'Login failed');
           return;
         }
-        router.push('/dashboard');
+        router.push('/properties');
         console.log('Logged in:', data.user);
       }
     } catch (err) {
