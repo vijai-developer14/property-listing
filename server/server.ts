@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv'
 import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger.js";
 import authrouter from './routes/authRoutes.js'
 import propertyRouter from './routes/propertyRoutes.js';
 import propertyTypeRouter from './routes/propertyTypeRoutes.js';
@@ -20,6 +22,9 @@ app.use(cookieParser());
 // === env
 const PORT = process.env.PORT || 3000;
 
+// == API DOCS ==
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // == LOGIN ==
 app.use('/api', authrouter);
 
@@ -30,9 +35,10 @@ app.use('/api/property-types', propertyTypeRouter);
 // == IMAGES
 app.use('/api/property-images', propertyImageRouter);
 
-// == INQUIRY
+// == INQUIRIES
 app.use('/api/inquiries', inquiryRouter);
 
 app.listen(PORT, ()=>{
     console.log('app listening to ' + PORT);
+    console.log(`API docs available at http://localhost:${PORT}/api-docs`);
 });
