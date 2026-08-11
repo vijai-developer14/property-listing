@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import PropertyForm from "./PropertyForm";
 import PropertyCard from "./PropertyCard";
+import InquiriesTab from "./InquiriesTab";
 import Link from "next/link";
 
 type Property = {
@@ -24,6 +25,7 @@ export default function DashboardClient() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<"properties" | "inquiries">("properties");
 
   const fetchProperties = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/properties/mine`, {
@@ -55,52 +57,85 @@ export default function DashboardClient() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <Link
-      href="/properties"
-      className="text-sm text-green-600 hover:underline mb-4 inline-block"
-    >
-      ← Back to Listings
-    </Link>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">My Properties</h1>
+        href="/properties"
+        className="text-sm text-green-600 hover:underline mb-4 inline-block"
+      >
+        ← Back to Listings
+      </Link>
+
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        {activeTab === "properties" && (
+          <button
+            onClick={() => { setEditingProperty(null); setShowForm(true); }}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg"
+          >
+            + Add Property
+          </button>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-gray-200 mb-6">
         <button
-          onClick={() => { setEditingProperty(null); setShowForm(true); }}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg"
+          onClick={() => setActiveTab("properties")}
+          className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "properties"
+              ? "border-green-600 text-green-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
         >
-          + Add Property
+          My Properties
+        </button>
+        <button
+          onClick={() => setActiveTab("inquiries")}
+          className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "inquiries"
+              ? "border-green-600 text-green-600"
+              : "border-transparent text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Inquiries
         </button>
       </div>
 
-      {showForm && (
-        <div className="mb-6 border border-gray-200 rounded-lg p-4">
-          <PropertyForm
-            propertyId={editingProperty?.id}
-            initialData={editingProperty ? {
-                property_name: editingProperty.property_name,
-                address_line: editingProperty.address_line,
-                location: editingProperty.location,
-                city: editingProperty.city,
-                property_size: String(editingProperty.property_size),
-                property_price: String(editingProperty.property_price),
-                description: editingProperty.description,
-                property_bhk: String(editingProperty.property_bhk),
-                property_type_id: String(editingProperty.property_type_id),
-            } : 
-            undefined}
-            onSuccess={handleFormSuccess}
-          />
-        </div>
-      )}
+      {activeTab === "properties" ? (
+        <>
+          {showForm && (
+            <div className="mb-6 border border-gray-200 rounded-lg p-4">
+              <PropertyForm
+                propertyId={editingProperty?.id}
+                initialData={editingProperty ? {
+                    property_name: editingProperty.property_name,
+                    address_line: editingProperty.address_line,
+                    location: editingProperty.location,
+                    city: editingProperty.city,
+                    property_size: String(editingProperty.property_size),
+                    property_price: String(editingProperty.property_price),
+                    description: editingProperty.description,
+                    property_bhk: String(editingProperty.property_bhk),
+                    property_type_id: String(editingProperty.property_type_id),
+                } : 
+                undefined}
+                onSuccess={handleFormSuccess}
+              />
+            </div>
+          )}
 
-      <div className="space-y-3">
-        {properties.map((p) => (
-          <PropertyCard
-            key={p.id}
-            property={p}
-            onEdit={(prop) => { setEditingProperty(prop as Property); setShowForm(true); }}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+          <div className="space-y-3">
+            {properties.map((p) => (
+              <PropertyCard
+                key={p.id}
+                property={p}
+                onEdit={(prop) => { setEditingProperty(prop as Property); setShowForm(true); }}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <InquiriesTab />
+      )}
     </div>
   );
 }

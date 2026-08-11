@@ -236,7 +236,7 @@ export default function PropertySearch() {
                   {p.property_size ? `${p.property_size} sq ft` : "—"}
                 </p>
                 <p className="text-lg font-bold text-green-600 mt-2">
-                  {p.property_price}
+                 { formatPrice(p.property_price)}
                 </p>
               </div>
             </Link>
@@ -258,4 +258,9 @@ export default function PropertySearch() {
       )}
     </div>
   );
+}
+function formatPrice(price: number): string {
+  if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
+  if (price >= 100000) return `₹${(price / 100000).toFixed(2)} L`;
+  return `₹${price.toLocaleString("en-IN")}`;
 }

@@ -6,6 +6,7 @@ import authrouter from './routes/authRoutes.js'
 import propertyRouter from './routes/propertyRoutes.js';
 import propertyTypeRouter from './routes/propertyTypeRoutes.js';
 import propertyImageRouter from './routes/propertyImageRoutes.js';
+import inquiryRouter from './routes/inquiryRoutes.js';
 
 const app = express();
 const env = dotenv.config()
@@ -28,6 +29,9 @@ app.use('/api/property-types', propertyTypeRouter);
 
 // == IMAGES
 app.use('/api/property-images', propertyImageRouter);
+
+// == INQUIRY
+app.use('/api/inquiries', inquiryRouter);
 
 app.listen(PORT, ()=>{
     console.log('app listening to ' + PORT);

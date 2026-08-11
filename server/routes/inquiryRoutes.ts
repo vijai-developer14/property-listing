@@ -1,8 +1,11 @@
 import express from 'express';
 import { requireAuth } from '../middleware/authMiddleware.js';
-import { createInquiry } from '../controllers/inquiryController.js';
+import { inquiryRateLimiter } from '../middleware/rateLimiter.js';
+import { createInquiry, getMyInquiries } from '../controllers/inquiryController.js';
 
 const router = express.Router();
-router.post('/:propertyId', requireAuth, createInquiry);
+
+router.get('/mine', requireAuth, getMyInquiries);
+router.post('/:propertyId', requireAuth, inquiryRateLimiter, createInquiry);
 
 export default router;
