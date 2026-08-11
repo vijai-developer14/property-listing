@@ -24,7 +24,7 @@ export default function PropertySearch() {
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -38,7 +38,7 @@ export default function PropertySearch() {
     sort: "newest",
   });
 
-  const fetchProperties = useCallback(async (targetPage: number, reset: boolean) => {
+  const fetchProperties = useCallback(async (cursor: string | null, reset: boolean) => {
     if (reset) setLoading(true);
     else setLoadingMore(true);
 
@@ -47,8 +47,8 @@ export default function PropertySearch() {
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      params.append("page", targetPage.toString());
       params.append("limit", "12");
+      if (cursor) params.append("cursor", cursor);
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/properties/search?${params.toString()}`);
       const data = await res.json();
@@ -56,7 +56,7 @@ export default function PropertySearch() {
       if (res.ok) {
         setProperties((prev) => (reset ? data.properties || [] : [...prev, ...(data.properties || [])]));
         setHasMore(data.hasMore);
-        setPage(targetPage);
+        setNextCursor(data.nextCursor ?? null);
       }
     } catch (err) {
       console.error("Search error:", err);
@@ -72,9 +72,9 @@ export default function PropertySearch() {
       .then((data) => setPropertyTypes(data.propertyTypes || []));
   }, []);
 
-  // Reset to page 1 whenever filters change
+  // Reset to the first page (no cursor) whenever filters change
   useEffect(() => {
-    fetchProperties(1, true);
+    fetchProperties(null, true);
   }, [filters]);
 
   useEffect(() => {
@@ -91,8 +91,8 @@ export default function PropertySearch() {
   };
 
   const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      fetchProperties(page + 1, false);
+    if (!loadingMore && hasMore && nextCursor) {
+      fetchProperties(nextCursor, false);
     }
   };
 

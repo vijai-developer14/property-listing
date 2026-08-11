@@ -1,7 +1,28 @@
-
-
 import pool from "../config/db.js";
 import type { Request, Response } from "express";
+
+type SortMode = "newest" | "price_low" | "price_high";
+
+type Cursor = {
+  v: string | number | null;
+  id: number;
+};
+
+function encodeCursor(cursor: Cursor): string {
+  return Buffer.from(JSON.stringify(cursor)).toString("base64url");
+}
+
+function decodeCursor(raw: string): Cursor | null {
+  try {
+    const parsed = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
+    if (parsed && typeof parsed.id === "number") {
+      return { v: parsed.v ?? null, id: parsed.id };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export const searchProperties = async (req: Request, res: Response) => {
   try {
@@ -12,13 +33,13 @@ export const searchProperties = async (req: Request, res: Response) => {
       min_price,
       max_price,
       sort = "newest",
-      page = "1",
+      cursor,
       limit = "12",
     } = req.query as Record<string, string>;
 
-    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
     const pageSize = Math.min(parseInt(limit, 10) || 12, 50);
-    const offset = (pageNum - 1) * pageSize;
+    const sortMode: SortMode =
+      sort === "price_low" || sort === "price_high" ? sort : "newest";
 
     const conditions: string[] = [];
     const values: any[] = [];
@@ -50,29 +71,52 @@ export const searchProperties = async (req: Request, res: Response) => {
       paramIndex++;
     }
 
-    let sortClause = "ORDER BY created_at DESC, id DESC";
-    if (sort === "price_low") {
+    // Keyset (cursor) condition. A cursor is only valid for the sort + filters
+    // it was issued under; the client resets it whenever those change.
+    const decoded = cursor ? decodeCursor(cursor) : null;
+    if (cursor && !decoded) {
+      return res.status(400).json({ message: "Invalid cursor" });
+    }
+
+    if (decoded) {
+      if (sortMode === "newest") {
+        // ORDER BY id DESC → the next page is everything with a smaller id.
+        conditions.push(`id < $${paramIndex}`);
+        values.push(decoded.id);
+        paramIndex++;
+      } else if (sortMode === "price_low") {
+        // ORDER BY property_price ASC, id ASC → next rows compare "greater".
+        conditions.push(`(property_price, id) > ($${paramIndex}, $${paramIndex + 1})`);
+        values.push(decoded.v, decoded.id);
+        paramIndex += 2;
+      } else {
+        // price_high: ORDER BY property_price DESC, id DESC → next rows compare "less".
+        conditions.push(`(property_price, id) < ($${paramIndex}, $${paramIndex + 1})`);
+        values.push(decoded.v, decoded.id);
+        paramIndex += 2;
+      }
+    }
+
+    let sortClause = "ORDER BY id DESC";
+    if (sortMode === "price_low") {
       sortClause = "ORDER BY property_price ASC, id ASC";
-    } else if (sort === "price_high") {
+    } else if (sortMode === "price_high") {
       sortClause = "ORDER BY property_price DESC, id DESC";
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    // Fetch pageSize + 1 to accurately determine if more items exist
+    // Fetch pageSize + 1 to detect whether another page exists.
     values.push(pageSize + 1);
     const limitParam = `$${paramIndex}`;
-    paramIndex++;
-
-    values.push(offset);
-    const offsetParam = `$${paramIndex}`;
 
     const query = `
       SELECT id, property_name, city, location, property_size, property_price, property_bhk, property_type_id, created_at
       FROM property
       ${whereClause}
       ${sortClause}
-      LIMIT ${limitParam} OFFSET ${offsetParam}
+      LIMIT ${limitParam}
     `;
 
     const result = await pool.query(query, values);
@@ -80,10 +124,17 @@ export const searchProperties = async (req: Request, res: Response) => {
     const hasMore = result.rows.length > pageSize;
     const properties = hasMore ? result.rows.slice(0, pageSize) : result.rows;
 
+    let nextCursor: string | null = null;
+    if (hasMore && properties.length > 0) {
+      const last = properties[properties.length - 1];
+      const sortValue = sortMode === "newest" ? null : last.property_price;
+      nextCursor = encodeCursor({ v: sortValue, id: last.id });
+    }
+
     return res.status(200).json({
       properties,
+      nextCursor,
       hasMore,
-      page: pageNum,
     });
   } catch (error) {
     console.error("Search error:", error);
