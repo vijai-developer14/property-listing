@@ -173,7 +173,7 @@ function LoginForm() {
               required
               value={formData.password}
               onChange={handleChange}
-              placeholder="******"
+              placeholder="min 8 characters"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none 
               transition text-gray-700"
             />
@@ -188,7 +188,7 @@ function LoginForm() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="******"
+                placeholder="min 8 characters"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none
                  transition text-gray-700"
               />
