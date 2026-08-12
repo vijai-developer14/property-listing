@@ -12,6 +12,7 @@ import inquiryRouter from './routes/inquiryRoutes.js';
 
 const app = express();
 const env = dotenv.config()
+app.set('trust proxy', 1);
 app.use(cors({
   origin: process.env.CLIENT_URL || "http://localhost:3001",
   credentials: true,
