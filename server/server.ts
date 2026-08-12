@@ -39,6 +39,9 @@ app.use('/api/property-images', propertyImageRouter);
 // == INQUIRIES
 app.use('/api/inquiries', inquiryRouter);
 
+// up time
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
 app.listen(PORT, ()=>{
     console.log('app listening to ' + PORT);
     console.log(`API docs available at http://localhost:${PORT}/api-docs`);
