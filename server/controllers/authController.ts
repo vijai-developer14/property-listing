@@ -110,6 +110,7 @@ export const login = async (req: Request, res: Response) => {
     httpOnly: true,
     secure:true,
     sameSite: "none" as const,
+      domain: ".vijaicodedev.online",
     maxAge: 30 * 60 * 1000, 
   });
 
@@ -117,6 +118,7 @@ export const login = async (req: Request, res: Response) => {
     httpOnly: true,
     secure: true,
     sameSite: "none" as const,
+      domain: ".vijaicodedev.online",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -160,6 +162,7 @@ export const refreshAccessToken = (req: Request, res: Response) => {
       httpOnly: true,
       secure: true,
       sameSite: "none" as const,
+        domain: ".vijaicodedev.online",
       maxAge: 30 * 60 * 1000, 
     });
 
